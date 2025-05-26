@@ -1,14 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import Head from 'next/head';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { ArrowRight, ArrowUp } from 'lucide-react';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/product/ProductCard';
+import { useAppSelector, useAppDispatch } from '@/store';
+import { RootState } from '@/store';
+import { fetchFeaturedProducts } from '@/store/features/featuredProductsSlice';
 
 const Home: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
+
+  const dispatch = useAppDispatch();
+  const { items, status, error } = useAppSelector((state: RootState) => state.featuredProducts);
+
+  // Afficher les données dans la console pour vérification
+  useEffect(() => {
+    console.log('Produits vedettes:', { items, status, error });
+  }, [items, status, error]);
+
+  useEffect(() => {
+    dispatch(fetchFeaturedProducts());
+  }, []);
 
   const toggleVisibility = () => {
     if (window.pageYOffset > 300) {
@@ -36,7 +49,7 @@ const Home: React.FC = () => {
       <section className="relative w-full h-[60vh] min-h-[400px]">
         {/* Image de fond */}
         <div className="absolute inset-0 bg-cover bg-center" style={{
-          backgroundImage: 'url(https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1500&q=80)',
+          backgroundImage: 'url(https://youegos.com/cdn/shop/files/youegos-hero-section-banner-updated.webp?v=1747821743&width=1500)',
           transform: 'scale(1.1)',
           transition: 'transform 0.3s ease-in-out'
         }}>
@@ -81,6 +94,23 @@ const Home: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {items.map((product) => (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                name={product.name}
+                price={product.price}
+                originalPrice={product.originalPrice}
+                image={product.imageUrl}
+                category="defaut"
+                isNew={product.isNew}
+                isBestSeller={false}
+                rating={0}
+                reviewCount={0}
+                showAddToCart={true}
+                showWishlist={true}
+              />
+            ))}
             {[
               {
                 id: 1,
@@ -115,17 +145,6 @@ const Home: React.FC = () => {
                 colors: ['black', 'gray'],
                 rating: 4.7,
                 reviewCount: 156
-              },
-              {
-                id: 4,
-                name: 'Robe Élégance',
-                price: 79.90,
-                image: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                category: 'Robes',
-                colors: ['black', 'red'],
-                isNew: true,
-                rating: 4.9,
-                reviewCount: 234
               }
             ].map((product) => (
               <ProductCard
