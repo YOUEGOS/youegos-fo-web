@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useAppSelector } from '@/store';
 
 // Chargement dynamique des composants (SSR désactivé car utilise window)
 const Wishlist = dynamic(() => import('./Wishlist'), { ssr: false });
@@ -73,27 +74,8 @@ interface WishlistItem {
 const Header: React.FC = () => {
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   
-  // Données de démonstration pour le panier
-  const [cartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: 'T-Shirt Basique',
-      price: 29.90,
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-      color: 'Noir',
-      size: 'M',
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: 'Jean Slim',
-      price: 89.90,
-      image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-      color: 'Bleu',
-      size: '40',
-      quantity: 2,
-    },
-  ]);
+  // Panier global depuis Redux
+  const cartItems = useAppSelector(state => state.cart.items);
 
   // Données de démonstration pour la wishlist
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
@@ -173,27 +155,25 @@ const Header: React.FC = () => {
 
             {/* Icons */}
             <div className="flex items-center space-x-4">
+              {/*
               <Link 
                 href="/wishlist"
                 className="p-2 text-gray-700 hover:text-sky-600 relative"
                 aria-label="Liste d'envies"
               >
                 <Heart className="h-5 w-5" />
-                {wishlistItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-sky-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {wishlistItems.length}
-                  </span>
-                )}
               </Link>
+              */}
               
-              <Link 
+              {/* Panier */}
+              <Link
                 href="/cart"
                 className="p-2 text-gray-700 hover:text-sky-600 relative"
                 aria-label="Panier"
               >
                 <ShoppingBag className="h-5 w-5" />
                 {cartItems.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-sky-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-sky-600 text-white rounded-full text-xs px-1.5 py-0.5 min-w-[18px] text-center font-bold">
                     {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
                   </span>
                 )}

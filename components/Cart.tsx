@@ -1,16 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { X, ShoppingBag, Trash2, Minus, Plus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-
-export interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  color: string;
-  size: string;
-  quantity: number;
-}
+import { useAppDispatch, useAppSelector } from '@/store';
+import { updateCartQuantity, removeFromCart } from '@/store/features/cartSlice';
 
 interface CartProps {
   isOpen?: boolean;
@@ -19,43 +11,18 @@ interface CartProps {
 }
 
 const Cart: React.FC<CartProps> = ({ isOpen, onClose, isPageView }) => {
-  // État temporaire du panier (à remplacer par un état global dans une application réelle)
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: 'T-Shirt Basique',
-      price: 29.90,
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-      color: 'Noir',
-      size: 'M',
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: 'Jean Slim',
-      price: 89.90,
-      image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80',
-      color: 'Bleu',
-      size: '40',
-      quantity: 2,
-    },
-  ]);
+  const dispatch = useAppDispatch();
+  const cartItems = useAppSelector(state => state.cart.items);
 
-  // Calcul du sous-total
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shippingCost = 4.90; // Frais de livraison fixes pour l'exemple
-  const total = subtotal + shippingCost;
-
-  const updateQuantity = (id: number, newQuantity: number) => {
+  const updateQuantity = (productId: number, variantId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
-    setCartItems(cartItems.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    ));
+    dispatch(updateCartQuantity({ productId, variantId, quantity: newQuantity }));
   };
 
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
+  const removeItem = (productId: number, variantId: number) => {
+    dispatch(removeFromCart({ productId, variantId }));
   };
+
 
   const renderCartContent = () => (
     <>
@@ -92,56 +59,56 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, isPageView }) => {
           <div className="flow-root">
             <ul className="-my-6 divide-y divide-gray-200">
               {cartItems.map((item) => (
-                <li key={item.id} className="py-6 flex">
-                  <div className="flex-shrink-0 w-24 h-24 border border-gray-200 rounded-md overflow-hidden">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-full h-full object-center object-cover"
-                    />
-                  </div>
+  <li key={item.productId + '-' + item.variantId} className="py-6 flex">
+    <div className="flex-shrink-0 w-24 h-24 border border-gray-200 rounded-md overflow-hidden">
+      <img
+        src={item.image}
+        alt={item.name}
+        className="w-full h-full object-center object-cover"
+      />
+    </div>
 
-                  <div className="ml-4 flex-1 flex flex-col">
-                    <div>
-                      <div className="flex justify-between text-base font-medium text-gray-900">
-                        <h3>{item.name}</h3>
-                        <p className="ml-4">{(item.price * item.quantity).toFixed(2)} €</p>
-                      </div>
-                      <p className="mt-1 text-sm text-gray-500">
-                        {item.color} · Taille {item.size}
-                      </p>
-                      <p className="text-sm font-medium text-gray-900 mt-1">
-                        {item.price.toFixed(2)} €
-                      </p>
-                    </div>
-                    <div className="flex-1 flex items-end justify-between mt-2">
-                      <div className="flex items-center border border-gray-300 rounded-md">
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="px-2 py-1 text-gray-600 hover:bg-gray-100"
-                          disabled={item.quantity <= 1}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </button>
-                        <span className="px-3 py-1 text-sm">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="px-2 py-1 text-gray-600 hover:bg-gray-100"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(item.id)}
-                        className="font-medium text-red-600 hover:text-red-500"
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </div>
-                </li>
-              ))}
+    <div className="ml-4 flex-1 flex flex-col">
+      <div>
+        <div className="flex justify-between text-base font-medium text-gray-900">
+          <h3>{item.name}</h3>
+          <p className="ml-4">{(item.price * item.quantity).toFixed(2)} €</p>
+        </div>
+        <p className="mt-1 text-sm text-gray-500">
+          {item.color} · Taille {item.size}
+        </p>
+        <p className="text-sm font-medium text-gray-900 mt-1">
+          {item.price.toFixed(2)} €
+        </p>
+      </div>
+      <div className="flex-1 flex items-end justify-between mt-2">
+        <div className="flex items-center border border-gray-300 rounded-md">
+          <button
+            onClick={() => updateQuantity(item.productId, item.variantId, item.quantity - 1)}
+            className="px-2 py-1 text-gray-600 hover:bg-gray-100"
+            disabled={item.quantity <= 1}
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <span className="px-3 py-1 text-sm">{item.quantity}</span>
+          <button
+            onClick={() => updateQuantity(item.productId, item.variantId, item.quantity + 1)}
+            className="px-2 py-1 text-gray-600 hover:bg-gray-100"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => removeItem(item.productId, item.variantId)}
+          className="font-medium text-red-600 hover:text-red-500"
+        >
+          <Trash2 className="h-5 w-5" />
+        </button>
+      </div>
+    </div>
+  </li>
+))}
             </ul>
           </div>
         )}
@@ -150,17 +117,9 @@ const Cart: React.FC<CartProps> = ({ isOpen, onClose, isPageView }) => {
       {cartItems.length > 0 && (
         <div className="border-t border-gray-200 px-4 py-6 sm:px-6">
           <div className="space-y-3">
-            <div className="flex justify-between text-base text-gray-600">
-              <p>Sous-total</p>
-              <p>{subtotal.toFixed(2)} €</p>
-            </div>
-            <div className="flex justify-between text-base text-gray-600">
-              <p>Frais de livraison</p>
-              <p>{shippingCost.toFixed(2)} €</p>
-            </div>
             <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t border-gray-200">
               <p>Total</p>
-              <p>{total.toFixed(2)} €</p>
+              <p>{cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2)} €</p>
             </div>
           </div>
           

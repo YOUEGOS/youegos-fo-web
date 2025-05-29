@@ -1,95 +1,77 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import ProductGallery from '@/components/product/ProductGallery';
 import ProductInfo from '@/components/product/ProductInfo';
+import { useRouter } from 'next/router';
+import { useAppDispatch, useAppSelector } from '@/store';
+import { addToCart } from '@/store/features/cartSlice';
+import { getProductWithVariant } from '@/store/features/productDetailSlice';
 
-// Types
-type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  description: string;
-  details: string[];
-  colors: { name: string; value: string; available: boolean }[];
-  sizes: { name: string; available: boolean }[];
-  images: string[];
-  isNew?: boolean;
-  isBestSeller?: boolean;
-}
-
-// Données de démonstration
-const product: Product = {
-  id: 1,
-  name: 'Chemise Oversize YOUEGOS',
-  price: 39.99,
-  originalPrice: 49.99,
-  description: 'Notre chemise oversize YOUEGOS allie confort et style. Conçue dans un coton biologique de qualité supérieure, elle offre un ajustement décontracté parfait pour un look urbain et tendance.',
-  details: [
-    '100% coton biologique certifié',
-    'Tissu respirant et doux',
-    'Coupe oversize moderne',
-    'Col classique avec boutons en nacre',
-    'Fabriqué en France'
-  ],
-  colors: [
-    { name: 'Noir', value: '#000000', available: true },
-    { name: 'Blanc', value: '#FFFFFF', available: true },
-    { name: 'Bleu marine', value: '#1E3A8A', available: true }
-  ],
-  sizes: [
-    { name: 'S', available: true },
-    { name: 'M', available: true },
-    { name: 'L', available: true },
-    { name: 'XL', available: false }
-  ],
-  images: [
-    'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-    'https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'
-  ],
-  isNew: true,
-  isBestSeller: true,
-
-};
-
-const ProductDetail: React.FC = () => {
+const ProductDetail = () => {
   const router = useRouter();
-  const [selectedColor, setSelectedColor] = useState<string>('');
-  const [selectedSize, setSelectedSize] = useState<string>('');
+  const dispatch = useAppDispatch();
+  const { product, loading, error } = useAppSelector(state => state.productDetail);
+
+  const [selectedColor, setSelectedColor] = useState<number>(0);
+  const [selectedSize, setSelectedSize] = useState<number>(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  // Sélectionner automatiquement la première couleur et taille disponibles
+  // Récupère l'id produit et variantId depuis l'URL (ou query string)
+  const productId = Number(router.query.id);
+  const variantId = Number(router.query.variantId) || 0;
   useEffect(() => {
-    if (product.colors.length > 0 && !selectedColor) {
-      setSelectedColor(product.colors[0].name);
+    if (productId) {
+      dispatch(getProductWithVariant({ productId, variantId }));
     }
-    if (product.sizes.length > 0 && !selectedSize) {
-      const availableSize = product.sizes.find(size => size.available);
-      if (availableSize) setSelectedSize(availableSize.name);
-    }
-  }, []);
+  }, [productId, variantId, dispatch]);
 
+  // Sélectionne la première variante disponible à l'arrivée ou quand le produit change
+  useEffect(() => {
+    if (product?.variants?.length) {
+      const firstAvailableVariant = product.variants.find(variant => variant.available);
+      if (firstAvailableVariant) {
+        setSelectedColor(firstAvailableVariant.color.id);
+        setSelectedSize(firstAvailableVariant.size.id);
+      }
+    }
+  }, [product]);
+
+  // Trouver la variante sélectionnée
+  const selectedVariant = product?.variants?.find(
+    v => v.color.id === selectedColor && v.size.id === selectedSize
+  );
+
+  // Correction : utilise l'action addToCart importée
   const handleAddToCart = () => {
-    // Logique d'ajout au panier
-    console.log('Ajout au panier :', { 
-      id: product.id, 
-      color: selectedColor, 
-      size: selectedSize, 
-      quantity 
-    });
+    if (!product) return;
+    const selectedVariant = product.variants?.find(
+      v => v.color.id === selectedColor && v.size.id === selectedSize
+    );
+    if (!selectedVariant) return;
+    dispatch(addToCart({
+      productId: product.id,
+      variantId: selectedVariant.id,
+      name: product.name,
+      price: product.price,
+      quantity,
+      image: selectedVariant.images?.[0]?.imageUrl || product.mainImageUrl,
+      color: selectedVariant.color.name,
+      size: selectedVariant.size.name,
+    }));
   };
+
 
   const toggleWishlist = () => {
     setIsWishlisted(!isWishlisted);
     // Ici, vous pourriez ajouter une logique pour mettre à jour la liste de souhaits côté serveur
   };
+
+  if (loading) return <div>Chargement…</div>;
+  if (error) return <div>Erreur : {error}</div>;
+  if (!product) return <div>Produit introuvable</div>;
 
   return (
     <Layout 
@@ -114,7 +96,15 @@ const ProductDetail: React.FC = () => {
           <div className="lg:grid lg:grid-cols-2 lg:gap-12">
             {/* Galerie d'images */}
             <ProductGallery 
-              images={product.images}
+              images={(() => {
+                const selectedVariant = product.variants?.find(
+                  v => v.color.id === selectedColor && v.size.id === selectedSize
+                );
+                if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
+                  return selectedVariant.images.map(img => img.imageUrl);
+                }
+                return product.commonImages?.map(image => image.imageUrl) || [];
+              })()}
               name={product.name}
               isNew={product.isNew}
               isBestSeller={product.isBestSeller}
@@ -124,20 +114,14 @@ const ProductDetail: React.FC = () => {
 
             {/* Détails du produit */}
             <ProductInfo
-              name={product.name}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              description={product.description}
-
-              colors={product.colors}
-              sizes={product.sizes}
+              product={product}
               onAddToCart={handleAddToCart}
               onToggleWishlist={toggleWishlist}
               isWishlisted={isWishlisted}
               selectedColor={selectedColor}
-              setSelectedColor={setSelectedColor}
+              setSelectedColor={(color: string | number) => setSelectedColor(parseInt(color.toString()))}
               selectedSize={selectedSize}
-              setSelectedSize={setSelectedSize}
+              setSelectedSize={(size: string | number) => setSelectedSize(parseInt(size.toString()))}
               quantity={quantity}
               setQuantity={setQuantity}
             />

@@ -1,31 +1,24 @@
 import { useState } from 'react';
 import { Star, Check, Truck, Shield } from 'lucide-react';
+import { ColorDTO, SizeDTO } from '@/types';
+
+import type { ProductDTO } from '@/types';
 
 interface ProductInfoProps {
-  name: string;
-  price: number;
-  originalPrice?: number;
-  description: string;
-  colors: { name: string; value: string; available: boolean }[];
-  sizes: { name: string; available: boolean }[];
+  product: ProductDTO;
   onAddToCart: () => void;
   onToggleWishlist: () => void;
   isWishlisted: boolean;
-  selectedColor: string;
-  setSelectedColor: (color: string) => void;
-  selectedSize: string;
-  setSelectedSize: (size: string) => void;
+  selectedColor: string | number;
+  setSelectedColor: (color: string | number) => void;
+  selectedSize: string | number;
+  setSelectedSize: (size: string | number) => void;
   quantity: number;
   setQuantity: (value: number | ((prev: number) => number)) => void;
 }
 
 export default function ProductInfo({
-  name,
-  price,
-  originalPrice,
-  description,
-  colors,
-  sizes,
+  product,
   onAddToCart,
   onToggleWishlist,
   isWishlisted,
@@ -36,23 +29,25 @@ export default function ProductInfo({
   quantity,
   setQuantity
 }: ProductInfoProps) {
+  // Animation feedback ajout au panier
+  const [isAdded, setIsAdded] = useState(false);
   // Calculer la réduction si le prix original est fourni
-  const discount = originalPrice ? Math.round((1 - price / originalPrice) * 100) : 0;
+  const discount = product.originalPrice ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
 
   return (
     <div className="mt-8 lg:mt-0">
-      <h1 className="text-2xl font-semibold text-gray-800">{name}</h1>
+      <h1 className="text-2xl font-semibold text-gray-800">{product.name}</h1>
       
       {/* Prix et avis */}
       <div className="mt-4">
         <div className="flex items-baseline">
           <span className="text-2xl font-semibold text-gray-800">
-            {price.toFixed(2)} €
+            {product.price.toFixed(2)} €
           </span>
-          {originalPrice && originalPrice > price && (
+          {product.originalPrice && product.originalPrice > product.price && (
             <>
               <span className="ml-3 text-lg text-gray-500 line-through">
-                {originalPrice.toFixed(2)} €
+                {product.originalPrice.toFixed(2)} €
               </span>
               <span className="ml-2 text-xs bg-red-50 text-red-700 px-2 py-0.5 rounded">
                 -{discount}%
@@ -66,31 +61,32 @@ export default function ProductInfo({
       
       {/* Description */}
       <div className="mt-6">
-        <p className="text-gray-700">{description}</p>
+        <p className="text-gray-700">{product.description}</p>
       </div>
       
       {/* Couleurs */}
       <div className="mt-6">
         <h3 className="text-sm font-medium text-gray-900">Couleur</h3>
         <div className="mt-2 flex space-x-2">
-          {colors.map((color) => (
-            <button
-              key={color.name}
-              onClick={() => color.available && setSelectedColor(color.name)}
-              disabled={!color.available}
-              className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${
-                selectedColor === color.name
-                  ? 'border-sky-500 ring-2 ring-offset-2 ring-sky-200'
-                  : 'border-transparent hover:border-gray-300'
-              } ${!color.available ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={`${color.name}${!color.available ? ' (Rupture de stock)' : ''}`}
-            >
-              <div
-                className="w-8 h-8 rounded-full border border-gray-200"
-                style={{ backgroundColor: color.value }}
-              />
-            </button>
-          ))}
+          {Array.from(new Map(
+  product.variants?.map(v => [v.color.id, v.color]) || []
+).values()).map((color) => (
+  <button
+    key={color.id}
+    onClick={() => setSelectedColor(color.id)}
+    className={`w-10 h-10 rounded-full border-2 flex items-center justify-center ${
+      selectedColor === color.id
+        ? 'border-sky-500 ring-2 ring-offset-2 ring-sky-200'
+        : 'border-transparent hover:border-gray-300'
+    }`}
+    title={color.name}
+  >
+    <div
+      className="w-8 h-8 rounded-full border border-gray-200"
+      style={{ backgroundColor: color.hexCode }}
+    />
+  </button>
+))} 
         </div>
       </div>
       
@@ -98,21 +94,30 @@ export default function ProductInfo({
       <div className="mt-6">
         <h3 className="text-sm font-medium text-gray-900">Taille</h3>
         <div className="mt-2 grid grid-cols-4 gap-2">
-          {sizes.map((size) => (
-            <button
-              key={size.name}
-              type="button"
-              onClick={() => size.available && setSelectedSize(size.name)}
-              disabled={!size.available}
-              className={`py-3 px-1 border rounded-md text-sm font-medium text-center ${
-                selectedSize === size.name
-                  ? 'bg-sky-50 border-sky-500 text-sky-700 ring-1 ring-sky-500'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-              } ${!size.available ? 'opacity-50 cursor-not-allowed line-through' : ''}`}
-            >
-              {size.name}
-            </button>
-          ))}
+          {Array.from(new Map(
+  product.variants?.map(v => [v.size.id, v.size]) || []
+).values()).map((size) => {
+  // Cherche la variante pour la couleur sélectionnée et cette taille
+  const variant = product.variants?.find(
+    v => v.color.id === selectedColor && v.size.id === size.id
+  );
+  const isAvailable = variant && variant.available;
+  return (
+    <button
+      key={size.id}
+      type="button"
+      onClick={() => isAvailable && setSelectedSize(size.id)}
+      disabled={!isAvailable}
+      className={`py-3 px-1 border rounded-md text-sm font-medium text-center ${
+        selectedSize === size.id
+          ? 'bg-sky-50 border-sky-500 text-sky-700 ring-1 ring-sky-500'
+          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+      } ${!isAvailable ? 'opacity-50 cursor-not-allowed line-through' : ''}`}
+    >
+      {size.name}
+    </button>
+  );
+})}
         </div>
         <button className="mt-2 text-sm text-sky-600 hover:text-sky-500">
           Guide des tailles
@@ -208,16 +213,23 @@ export default function ProductInfo({
       
       {/* Boutons d'action */}
       <div className="mt-8 space-y-3">
-        <button
-          onClick={onAddToCart}
-          className="w-full flex items-center justify-center bg-sky-600 py-4 px-6 border border-transparent rounded-lg text-base font-medium text-white hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors"
-        >
-          <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-          </svg>
-          Ajouter au panier
-        </button>
-        <button
+         {/** Animation d'ajout au panier */}
+         <button
+           onClick={() => {
+             setIsAdded(true);
+             onAddToCart();
+             setTimeout(() => setIsAdded(false), 700);
+           }}
+           className={`w-full flex items-center justify-center bg-sky-600 py-4 px-6 border border-transparent rounded-lg text-base font-medium text-white hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors
+             ${isAdded ? 'scale-105 ring-2 ring-emerald-400 bg-emerald-600 animate-pulse' : ''}`}
+           style={{ transition: 'transform 0.2s, background 0.2s' }}
+         >
+           <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+           </svg>
+           {isAdded ? 'Ajouté !' : 'Ajouter au panier'}
+         </button>
+        {/*<button
           onClick={onToggleWishlist}
           className={`w-full flex items-center justify-center py-3 px-6 border rounded-lg text-base font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors ${
             isWishlisted
@@ -238,6 +250,7 @@ export default function ProductInfo({
           </svg>
           {isWishlisted ? 'Retirer de la liste de souhaits' : 'Ajouter à la liste de souhaits'}
         </button>
+        */}
       </div>
       
       {/* Livraison et garantie */}

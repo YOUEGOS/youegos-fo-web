@@ -5,33 +5,57 @@ module.exports = {
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        // Palette principale
+        // Palette noir et blanc
         primary: {
-          DEFAULT: '#0D47A1', // Bleu foncé
-          light: '#1A237E',
-          dark: '#01579B'
+          DEFAULT: '#000000', // Noir
+          light: '#333333',
+          dark: '#000000'
         },
         accent: {
-          DEFAULT: '#FF3D00', // Rouge accent
-          light: '#FF6D00'
+          DEFAULT: '#4B5563', // Gris foncé
+          light: '#6B7280'   // Gris moyen
         },
         text: {
-          primary: '#000000', // Noir
-          secondary: '#757575', // Gris moyen
-          light: '#FFFFFF'    // Blanc
+          primary: '#000000',   // Noir
+          secondary: '#4B5563', // Gris foncé
+          light: '#FFFFFF',     // Blanc
+          dark: '#E5E7EB'      // Gris clair
         },
         background: {
-          DEFAULT: '#FFFFFF', // Blanc
-          dark: '#121212'     // Noir
-        }
-      },
+          light: '#FFFFFF', // Blanc pur
+          DEFAULT: '#F9FAFB', // Gris très clair
+          dark: '#111827'    // Noir profond
+        },
+        gray: {
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          300: '#D1D5DB',
+          400: '#9CA3AF',
+          500: '#6B7280',
+          600: '#4B5563',
+          700: '#374151',
+          800: '#1F2937',
+          900: '#111827'
+        },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        display: ['Space Grotesk', 'sans-serif'],
+        display: ['Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace']
+      },
+      boxShadow: {
+        'xs': '0 0 0 1px rgba(0, 0, 0, 0.05)',
+        'sm': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+        DEFAULT: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+        'md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'lg': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'xl': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        'inner': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)'
       },
       fontWeight: {
         hairline: '100',
@@ -62,4 +86,5 @@ module.exports = {
     }
   },
   plugins: []
+}
 }

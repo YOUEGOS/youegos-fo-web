@@ -1,111 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Filter, X } from 'lucide-react';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/product/ProductCard';
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  category: string;
-  colors: string[];
-  isNew?: boolean;
-  isBestSeller?: boolean;
-  rating: number;
-  reviewCount: number;
-}
+import { useAppSelector, useAppDispatch } from '@/store';
+import { fetchFilteredProducts } from '@/store/features/productsSlice';
+import { ProductFilter } from '@/types';
 
 const Shop: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState('popular');
+  const dispatch = useAppDispatch();
+  const { items, status, error } = useAppSelector(state => state.products);
+  const [filters, setFilters] = useState<ProductFilter>({ sortBy: 'popularity', order: 'asc' });
 
-  // Données de démonstration - uniquement des chemises
-  const products: Product[] = [
-    {
-      id: 1,
-      name: 'Chemise Oversize YOUEGOS',
-      price: 39.99,
-      originalPrice: 49.99,
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      category: 'Chemises',
-      colors: ['black', 'white', 'gray'],
-      isNew: true,
-      rating: 4.8,
-      reviewCount: 124
-    },
-    {
-      id: 2,
-      name: 'Chemise à Carreaux',
-      price: 45.90,
-      image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      category: 'Chemises',
-      colors: ['red', 'blue'],
-      isBestSeller: true,
-      rating: 4.6,
-      reviewCount: 89
-    },
-    {
-      id: 3,
-      name: 'Chemise en Lin',
-      price: 55.90,
-      image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      category: 'Chemises',
-      colors: ['beige', 'white'],
-      rating: 4.7,
-      reviewCount: 156
-    },
-    {
-      id: 4,
-      name: 'Chemise à Col Mao',
-      price: 49.90,
-      originalPrice: 59.90,
-      image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      category: 'Chemises',
-      colors: ['black', 'navy'],
-      isNew: true,
-      rating: 4.9,
-      reviewCount: 234
-    },
-    {
-      id: 5,
-      name: 'Chemise à Carreaux Vichy',
-      price: 42.90,
-      image: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      category: 'Chemises',
-      colors: ['blue', 'red'],
-      rating: 4.5,
-      reviewCount: 76
-    },
-    {
-      id: 6,
-      name: 'Chemise en Flanelle',
-      price: 47.90,
-      originalPrice: 59.90,
-      image: 'https://images.unsplash.com/photo-1527719327859-c6ce80353573?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-      category: 'Chemises',
-      colors: ['black', 'gray'],
-      isBestSeller: true,
-      rating: 4.7,
-      reviewCount: 189
-    },
-  ];
+  useEffect(() => {
+    // Appel initial, peut être adapté pour prendre en compte les filtres plus tard
+    dispatch(fetchFilteredProducts(filters));
+  }, [dispatch]);
 
   // Création d'un tableau de catégories uniques
-  const categories = Array.from(new Set(products.map(product => product.category)));
-  
-  const filteredProducts = selectedCategory 
-    ? products.filter(product => product.category === selectedCategory)
-    : products;
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === 'price-asc') return a.price - b.price;
-    if (sortBy === 'price-desc') return b.price - a.price;
-    if (sortBy === 'rating') return b.rating - a.rating;
-    return 0; // 'popular' (default)
-  });
+  const categories = Array.from(new Set(items.map(product => product.category)));
 
   return (
     <Layout 
@@ -121,16 +34,20 @@ const Shop: React.FC = () => {
           
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
-              >
-                <option value="popular">Populaires</option>
-                <option value="price-asc">Prix croissant</option>
-                <option value="price-desc">Prix décroissant</option>
-                <option value="rating">Mieux notés</option>
-              </select>
+            <select
+              value={filters.sortBy + '-' + (filters.order || 'asc')}
+              onChange={e => {
+                const [sortBy, order] = e.target.value.split('-');
+                setFilters({ sortBy: sortBy as ProductFilter['sortBy'], order: order as ProductFilter['order'] });
+                dispatch(fetchFilteredProducts({ sortBy: sortBy as ProductFilter['sortBy'], order: order as ProductFilter['order'] }));
+              }}
+              className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+            >
+              <option value="popularity-asc">Populaires</option>
+              <option value="price-asc">Prix croissant</option>
+              <option value="price-desc">Prix décroissant</option>
+              <option value="rating-desc">Mieux notés</option>
+            </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -142,14 +59,15 @@ const Shop: React.FC = () => {
 
         {/* Grille de produits */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedProducts.map((product) => (
+          {items.map((product) => (
             <ProductCard
               key={product.id}
               id={product.id}
+              variantId={product.variantId}
               name={product.name}
               price={product.price}
               originalPrice={product.originalPrice}
-              image={product.image}
+              image={product.imageUrl}
               category={product.category}
               isNew={product.isNew}
               isBestSeller={product.isBestSeller}
@@ -169,16 +87,6 @@ const Shop: React.FC = () => {
             </button>
             <button className="px-3 py-1 rounded-md border border-sky-500 text-sm font-medium text-white bg-sky-600">
               1
-            </button>
-            <button className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-              2
-            </button>
-            <button className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-              3
-            </button>
-            <span className="px-3 py-1 text-sm text-gray-700">...</span>
-            <button className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-              10
             </button>
             <button className="px-3 py-1 rounded-md border border-gray-300 text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
               Suivant

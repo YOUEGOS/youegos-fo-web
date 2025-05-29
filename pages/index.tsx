@@ -66,10 +66,13 @@ const Home: React.FC = () => {
               Des pièces originales, conçues avec conscience pour ceux qui veulent se distinguer avec sens.
             </p>
             <div className="flex justify-center w-full mt-8">
-            <Link href="/shop" className="inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-medium rounded-lg text-white bg-sky-600 hover:bg-sky-700 transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
-                    Explorer la collection
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
+            <Link
+              href="/shop"
+              className="group inline-flex items-center justify-center px-8 py-3.5 border border-primary text-base font-medium rounded-lg text-white bg-primary transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              Explorer la collection
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
             </div>
           </div>
         </div>
@@ -94,26 +97,39 @@ const Home: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {items.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                image={product.imageUrl}
-                category="defaut"
-                isNew={product.isNew}
-                isBestSeller={false}
-                rating={0}
-                reviewCount={0}
-                showAddToCart={true}
-                showWishlist={true}
-              />
-            ))}
+            {items?.map((product) => (
+  <Link
+    key={product.id + '-' + product.variantId}
+    href={{
+      pathname: `/shop/${product.id}`,
+      query: { variantId: product.variantId }
+    }}
+    passHref
+    legacyBehavior
+  >
+    <a style={{ display: 'block', height: '100%' }}>
+      <ProductCard
+        id={product.id}
+        variantId={product.variantId}
+        name={product.name}
+        price={product.price}
+        originalPrice={product.originalPrice}
+        image={product.imageUrl}
+        category="defaut"
+        isNew={product.isNew}
+        isBestSeller={false}
+        rating={0}
+        reviewCount={0}
+        showAddToCart={true}
+        showWishlist={true}
+      />
+    </a>
+  </Link>
+))}
             {[
               {
                 id: 1,
+                variantId: 1,
                 name: 'Chemise Classique',
                 price: 59.90,
                 originalPrice: 79.90,
@@ -126,6 +142,7 @@ const Home: React.FC = () => {
               },
               {
                 id: 2,
+                variantId: 2,
                 name: 'Jean Slim',
                 price: 89.90,
                 image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
@@ -137,6 +154,7 @@ const Home: React.FC = () => {
               },
               {
                 id: 3,
+                variantId: 3,
                 name: 'Veste Urbaine',
                 price: 129.90,
                 originalPrice: 149.90,
@@ -145,11 +163,24 @@ const Home: React.FC = () => {
                 colors: ['black', 'gray'],
                 rating: 4.7,
                 reviewCount: 156
+              },
+              {
+                id: 4,
+                variantId: 4,
+                name: 'Robe Élégance',
+                price: 79.90,
+                image: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                category: 'Robes',
+                colors: ['black', 'red'],
+                isNew: true,
+                rating: 4.9,
+                reviewCount: 234
               }
             ].map((product) => (
               <ProductCard
                 key={product.id}
                 id={product.id}
+                variantId={product?.variantId}
                 name={product.name}
                 price={product.price}
                 originalPrice={product.originalPrice}
