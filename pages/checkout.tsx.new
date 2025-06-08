@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useAppSelector, useAppDispatch } from '@/store';
+import { useAppSelector } from '@/store';
 import { useRouter } from 'next/router';
-import { clearCart } from '@/store/features/cartSlice';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { createOrder } from '@/services/orderService';
@@ -16,7 +15,6 @@ const Checkout: React.FC = () => {
   const router = useRouter();
   const [adresseValidee, setAdresseValidee] = useState(false);
   const cartItems = useAppSelector(state => state.cart.items);
-  const dispatch = useAppDispatch();
 
   const [form, setForm] = useState({
     firstName: '',
@@ -27,11 +25,6 @@ const Checkout: React.FC = () => {
     postalCode: '',
     country: '',
     phone: '',
-    paymentMethod: 'card', // 'card' ou 'paypal'
-    cardNumber: '',
-    cardExpiry: '',
-    cardCvc: '',
-    paypalEmail: '',
   });
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -45,7 +38,6 @@ const Checkout: React.FC = () => {
   const handleStripePayment = async (): Promise<{clientSecret: string} | {error: string}> => {
     try {
       let currentOrderId = orderId;
-      // Crée la commande si pas déjà créée
       if (!currentOrderId) {
         const orderRequest: OrderRequestDTO = {
           shippingAddress: {
@@ -75,7 +67,6 @@ const Checkout: React.FC = () => {
         setClientSecret(orderResponse.clientSecret);
         return { clientSecret: orderResponse.clientSecret };
       } else {
-        // Si la commande existe déjà, on suppose que le clientSecret est déjà connu (par exemple, stocké dans le state)
         if (clientSecret) {
           return { clientSecret };
         } else {
@@ -122,7 +113,6 @@ const Checkout: React.FC = () => {
     if (!validateAdresse()) return;
     setErrors({});
     setAdresseValidee(true);
-    handleStripePayment();
   };
 
   return (
@@ -186,7 +176,8 @@ const Checkout: React.FC = () => {
               </div>
             </div>
           </div>
-          {/* Colonne gauche : adresse puis paiement */}
+
+          {/* Colonne gauche : adresse puis paiement */}
           <div className="
             flex-1 p-6
             bg-background-light/5
@@ -199,12 +190,17 @@ const Checkout: React.FC = () => {
               bg-gradient-to-r from-accent-light to-accent-dark
               bg-clip-text text-transparent
             ">Adresse de livraison</h1>
-            <p className="text-text-secondary mb-6">Veuillez renseigner vos coordonnées pour la livraison.</p>
+            <p className="text-text-secondary mb-6">
+              Veuillez renseigner vos coordonnées pour la livraison.
+            </p>
+
             {!adresseValidee ? (
               <form className="space-y-5" onSubmit={handleAdresseNext}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-text-primary mb-1">Prénom *</label>
+                    <label className="block text-sm text-text-primary mb-1">
+                      Prénom *
+                    </label>
                     <input 
                       name="firstName" 
                       value={form.firstName} 
@@ -222,45 +218,191 @@ const Checkout: React.FC = () => {
                         focus:outline-none focus:ring-1 focus:ring-accent-light/20
                       "
                     />
-                    {errors.firstName && <span className="text-xs text-accent-light">{errors.firstName}</span>}
+                    {errors.firstName && (
+                      <span className="text-xs text-accent-light">{errors.firstName}</span>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm text-text-primary mb-1">Nom *</label>
-                    <input name="lastName" value={form.lastName} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500" />
-                    {errors.lastName && <span className="text-xs text-red-500">{errors.lastName}</span>}
+                    <label className="block text-sm text-text-primary mb-1">
+                      Nom *
+                    </label>
+                    <input 
+                      name="lastName" 
+                      value={form.lastName} 
+                      onChange={handleChange} 
+                      className="
+                        w-full px-3 py-2
+                        bg-background-light/5
+                        border border-accent-light/20
+                        hover:border-accent-light/40
+                        focus:border-accent-light/60
+                        rounded-md
+                        text-text-primary
+                        placeholder-text-secondary/50
+                        transition duration-300
+                        focus:outline-none focus:ring-1 focus:ring-accent-light/20
+                      "
+                    />
+                    {errors.lastName && (
+                      <span className="text-xs text-accent-light">{errors.lastName}</span>
+                    )}
                   </div>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Email *</label>
-                  <input name="email" type="email" value={form.email} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500" />
-                  {errors.email && <span className="text-xs text-red-500">{errors.email}</span>}
+                  <label className="block text-sm text-text-primary mb-1">
+                    Email *
+                  </label>
+                  <input 
+                    name="email" 
+                    type="email" 
+                    value={form.email} 
+                    onChange={handleChange} 
+                    className="
+                      w-full px-3 py-2
+                      bg-background-light/5
+                      border border-accent-light/20
+                      hover:border-accent-light/40
+                      focus:border-accent-light/60
+                      rounded-md
+                      text-text-primary
+                      placeholder-text-secondary/50
+                      transition duration-300
+                      focus:outline-none focus:ring-1 focus:ring-accent-light/20
+                    "
+                  />
+                  {errors.email && (
+                    <span className="text-xs text-accent-light">{errors.email}</span>
+                  )}
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Adresse *</label>
-                  <input name="address" value={form.address} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500" />
-                  {errors.address && <span className="text-xs text-red-500">{errors.address}</span>}
+                  <label className="block text-sm text-text-primary mb-1">
+                    Adresse *
+                  </label>
+                  <input 
+                    name="address" 
+                    value={form.address} 
+                    onChange={handleChange} 
+                    className="
+                      w-full px-3 py-2
+                      bg-background-light/5
+                      border border-accent-light/20
+                      hover:border-accent-light/40
+                      focus:border-accent-light/60
+                      rounded-md
+                      text-text-primary
+                      placeholder-text-secondary/50
+                      transition duration-300
+                      focus:outline-none focus:ring-1 focus:ring-accent-light/20
+                    "
+                  />
+                  {errors.address && (
+                    <span className="text-xs text-accent-light">{errors.address}</span>
+                  )}
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm text-text-primary mb-1">Ville *</label>
-                    <input name="city" value={form.city} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500" />
-                    {errors.city && <span className="text-xs text-red-500">{errors.city}</span>}
+                    <label className="block text-sm text-text-primary mb-1">
+                      Ville *
+                    </label>
+                    <input 
+                      name="city" 
+                      value={form.city} 
+                      onChange={handleChange} 
+                      className="
+                        w-full px-3 py-2
+                        bg-background-light/5
+                        border border-accent-light/20
+                        hover:border-accent-light/40
+                        focus:border-accent-light/60
+                        rounded-md
+                        text-text-primary
+                        placeholder-text-secondary/50
+                        transition duration-300
+                        focus:outline-none focus:ring-1 focus:ring-accent-light/20
+                      "
+                    />
+                    {errors.city && (
+                      <span className="text-xs text-accent-light">{errors.city}</span>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm text-text-primary mb-1">Code postal *</label>
-                    <input name="postalCode" value={form.postalCode} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500" />
-                    {errors.postalCode && <span className="text-xs text-red-500">{errors.postalCode}</span>}
+                    <label className="block text-sm text-text-primary mb-1">
+                      Code postal *
+                    </label>
+                    <input 
+                      name="postalCode" 
+                      value={form.postalCode} 
+                      onChange={handleChange} 
+                      className="
+                        w-full px-3 py-2
+                        bg-background-light/5
+                        border border-accent-light/20
+                        hover:border-accent-light/40
+                        focus:border-accent-light/60
+                        rounded-md
+                        text-text-primary
+                        placeholder-text-secondary/50
+                        transition duration-300
+                        focus:outline-none focus:ring-1 focus:ring-accent-light/20
+                      "
+                    />
+                    {errors.postalCode && (
+                      <span className="text-xs text-accent-light">{errors.postalCode}</span>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm text-text-primary mb-1">Pays *</label>
-                    <input name="country" value={form.country} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500" />
-                    {errors.country && <span className="text-xs text-red-500">{errors.country}</span>}
+                    <label className="block text-sm text-text-primary mb-1">
+                      Pays *
+                    </label>
+                    <input 
+                      name="country" 
+                      value={form.country} 
+                      onChange={handleChange} 
+                      className="
+                        w-full px-3 py-2
+                        bg-background-light/5
+                        border border-accent-light/20
+                        hover:border-accent-light/40
+                        focus:border-accent-light/60
+                        rounded-md
+                        text-text-primary
+                        placeholder-text-secondary/50
+                        transition duration-300
+                        focus:outline-none focus:ring-1 focus:ring-accent-light/20
+                      "
+                    />
+                    {errors.country && (
+                      <span className="text-xs text-accent-light">{errors.country}</span>
+                    )}
                   </div>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Téléphone</label>
-                  <input name="phone" value={form.phone} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-sky-500" />
+                  <label className="block text-sm text-text-primary mb-1">
+                    Téléphone
+                  </label>
+                  <input 
+                    name="phone" 
+                    value={form.phone} 
+                    onChange={handleChange} 
+                    className="
+                      w-full px-3 py-2
+                      bg-background-light/5
+                      border border-accent-light/20
+                      hover:border-accent-light/40
+                      focus:border-accent-light/60
+                      rounded-md
+                      text-text-primary
+                      placeholder-text-secondary/50
+                      transition duration-300
+                      focus:outline-none focus:ring-1 focus:ring-accent-light/20
+                    "
+                  />
                 </div>
+
                 <button 
                   type="submit" 
                   className="
@@ -279,7 +421,9 @@ const Checkout: React.FC = () => {
                     relative
                     overflow-hidden
                   "
-                >Valider l'adresse</button>
+                >
+                  Valider l'adresse
+                </button>
               </form>
             ) : (
               <div className="
@@ -289,7 +433,9 @@ const Checkout: React.FC = () => {
                 rounded-md
               ">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-display text-accent-light">Adresse de livraison</span>
+                  <span className="font-display text-accent-light">
+                    Adresse de livraison
+                  </span>
                   <button 
                     type="button" 
                     className="
@@ -307,70 +453,13 @@ const Checkout: React.FC = () => {
                   <div>{form.address}</div>
                   <div>{form.postalCode} {form.city}</div>
                   <div>{form.country}</div>
-                  <div>{form.email}</div>
                   {form.phone && <div>{form.phone}</div>}
+                  <div>{form.email}</div>
                 </div>
               </div>
             )}
-            {adresseValidee && (
-              <>
-                <div className="my-8 border-t border-gray-100" />
-                <h2 className="text-xl font-display text-text-primary mb-2">Paiement</h2>
-                <p className="text-text-secondary mb-6">Renseignez vos informations bancaires pour finaliser la commande.</p>
-                <div className="mt-6">
-                  {clientSecret ? (
-                    <Elements stripe={stripePromise} options={{ clientSecret }}>
-                      <StripeCheckoutForm
-                        onPaymentSuccess={(paymentIntentId) => {
-                          if (orderId) {
-                            dispatch(clearCart());
-                            router.push(`/order/${orderId}`);
-                          }
-                        }}
-                        className="
-                          space-y-4
-                          [&_.StripeElement]:!bg-background-light/5
-                          [&_.StripeElement]:!border-accent-light/20
-                          [&_.StripeElement]:!rounded-md
-                          [&_.StripeElement]:!px-3
-                          [&_.StripeElement]:!py-2
-                          [&_.StripeElement--focus]:!border-accent-light/60
-                          [&_.StripeElement--focus]:!ring-1
-                          [&_.StripeElement--focus]:!ring-accent-light/20
-                        "
-                      />
-                    </Elements>
-                  ) : (
-                    <button
-                      onClick={async () => {
-                        try {
-                          const result = await handleStripePayment();
-                          if ('error' in result) {
-                            throw new Error(result.error);
-                          }
-                        } catch (error) {
-                          console.error('Erreur lors de l\'initialisation du paiement:', error);
-                        }
-                      }}
-                      className="
-                        w-full px-8 py-3
-                        bg-background-light/5
-                        hover:bg-background-light/10
-                        border border-accent-light/20
-                        hover:border-accent-light/40
-                        rounded-md
-                        font-display
-                        text-text-primary hover:text-accent-light
-                        transition duration-300
-                      "
-                    >
-                      Procéder au paiement
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
           </div>
+
           {/* Colonne droite : récapitulatif */}
           <div className="hidden md:block w-full md:w-96 lg:w-[480px] space-y-6 sticky top-6 h-fit">
             <div className="
@@ -425,7 +514,9 @@ const Checkout: React.FC = () => {
                         group-hover:from-accent-dark group-hover:to-accent-light
                         transition duration-300
                       ">{item.name}</h4>
-                      <p className="text-text-secondary text-sm mt-1">Quantité: {item.quantity}</p>
+                      <p className="text-text-secondary text-sm mt-1">
+                        Quantité: {item.quantity}
+                      </p>
                     </div>
                     <p className="text-text-primary text-right">
                       {(item.price * item.quantity).toFixed(2)} €
@@ -444,7 +535,9 @@ const Checkout: React.FC = () => {
                   <span>{(total * 0.2).toFixed(2)} €</span>
                 </div>
                 <div className="flex justify-between items-baseline">
-                  <span className="font-display text-lg text-text-primary">Total</span>
+                  <span className="font-display text-lg text-text-primary">
+                    Total
+                  </span>
                   <span className="
                     font-display text-xl
                     bg-gradient-to-r from-accent-light to-accent-dark
@@ -459,9 +552,8 @@ const Checkout: React.FC = () => {
                 <div className="mt-6">
                   <Elements stripe={stripePromise}>
                     <StripeCheckoutForm
-                      onPaymentSuccess={async (paymentIntentId) => { 
-                        
-                      }}
+                      onPayment={handleStripePayment}
+                      amount={total * 1.2}
                       className="
                         space-y-4
                         [&_.StripeElement]:!bg-background-light/5

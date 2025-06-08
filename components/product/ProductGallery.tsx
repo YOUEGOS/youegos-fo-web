@@ -34,65 +34,114 @@ export default function ProductGallery({
     : 0;
 
   return (
-    <div className="space-y-4">
-      <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden relative">
+    <div className="space-y-6">
+      <div className="
+        aspect-[4/5] bg-background-light/50 backdrop-blur-sm
+        border border-accent-light/10 rounded-sm overflow-hidden relative
+        group
+      ">
         <img
           src={images[currentImageIndex]}
           alt={`${name} - Vue ${currentImageIndex + 1}`}
-          className="w-full h-full object-cover object-center"
+          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
         />
+        
+        {/* Overlay subtil */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background/20" />
         
         {/* Badges */}
         <div className="absolute top-4 left-4 flex flex-col space-y-2">
           {isNew && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-sky-700 shadow-sm">
-              Nouveauté
+            <span className="
+              inline-flex items-center px-4 py-1
+              bg-background-light/80 backdrop-blur-sm
+              border border-accent-light/20 rounded-sm
+              font-display text-xs tracking-wider text-accent
+              shadow-sm shadow-accent/5
+            ">
+              Nouveau
             </span>
           )}
           {isBestSeller && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-600 text-white">
+            <span className="
+              inline-flex items-center px-4 py-1
+              bg-accent/10 backdrop-blur-sm
+              border border-accent-light/20 rounded-sm
+              font-display text-xs tracking-wider text-accent-light
+              shadow-sm shadow-accent/5
+            ">
               Best-seller
             </span>
           )}
           {originalPrice && price && originalPrice > price && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-600 text-white">
+            <span className="
+              inline-flex items-center px-4 py-1
+              bg-background-light/80 backdrop-blur-sm
+              border border-accent-light/20 rounded-sm
+              font-display text-xs tracking-wider text-accent
+              shadow-sm shadow-accent/5
+            ">
               -{discount}%
             </span>
           )}
         </div>
         
         {/* Navigation des images */}
-        <button 
-          onClick={prevImage}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 shadow-md hover:bg-white transition-colors"
-          aria-label="Image précédente"
-        >
-          <ChevronLeft className="h-5 w-5 text-gray-900" />
-        </button>
-        <button 
-          onClick={nextImage}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 shadow-md hover:bg-white transition-colors"
-          aria-label="Image suivante"
-        >
-          <ChevronRight className="h-5 w-5 text-gray-900" />
-        </button>
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <button 
+            onClick={prevImage}
+            className="
+              p-3 rounded-sm
+              bg-background-light/80 backdrop-blur-sm
+              border border-accent-light/20
+              text-text-primary hover:text-accent
+              transition-all duration-300 hover:border-accent-light/40
+              transform hover:-translate-x-1
+            "
+            aria-label="Image précédente"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button 
+            onClick={nextImage}
+            className="
+              p-3 rounded-sm
+              bg-background-light/80 backdrop-blur-sm
+              border border-accent-light/20
+              text-text-primary hover:text-accent
+              transition-all duration-300 hover:border-accent-light/40
+              transform hover:translate-x-1
+            "
+            aria-label="Image suivante"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
       </div>
       
       {/* Miniatures */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-4">
         {images.map((image, index) => (
           <button
             key={index}
             onClick={() => setCurrentImageIndex(index)}
-            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-              currentImageIndex === index ? 'border-sky-500' : 'border-transparent hover:border-gray-300'
-            }`}
+            className={`
+              aspect-square rounded-sm overflow-hidden
+              border transition-all duration-300
+              ${currentImageIndex === index
+                ? 'border-accent-light/40 ring-1 ring-accent-light/20'
+                : 'border-accent-light/10 hover:border-accent-light/20'
+              }
+            `}
           >
-            <img
-              src={image}
-              alt={`${name} - Miniature ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
+            <div className="w-full h-full relative group">
+              <img
+                src={image}
+                alt={`${name} - Miniature ${index + 1}`}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-transparent to-background/20" />
+            </div>
           </button>
         ))}
       </div>

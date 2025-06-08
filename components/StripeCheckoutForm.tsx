@@ -3,9 +3,10 @@ import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
 interface StripeCheckoutFormProps {
   onPaymentSuccess: (paymentIntentId: string) => void;
+  className?: string;
 }
 
-const StripeCheckoutForm: React.FC<StripeCheckoutFormProps> = ({ onPaymentSuccess }) => {
+const StripeCheckoutForm: React.FC<StripeCheckoutFormProps> = ({ onPaymentSuccess, className }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +47,7 @@ const StripeCheckoutForm: React.FC<StripeCheckoutFormProps> = ({ onPaymentSucces
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className={className}>
       <PaymentElement options={{ layout: 'tabs' }} />
       {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
       <button
