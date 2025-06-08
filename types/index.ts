@@ -13,7 +13,7 @@ export interface ProductDTO {
   rating?: number;
   reviewCount?: number;
   mainImageUrl?: string;
-  categoryId: number;
+  categoryName: string;
   commonImages?: ProductImageDTO[];
   variants?: ProductVariantDTO[];
 }

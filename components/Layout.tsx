@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import Head from 'next/head';
 import Header from './Header';
 import Footer from './Footer';
+import ThemeToggle from './ThemeToggle';
 
 interface LayoutProps {
   children: ReactNode;
@@ -15,7 +16,7 @@ const Layout: React.FC<LayoutProps> = ({
   description = 'Découvrez notre collection de vêtements tendance et de qualité pour homme et femme.'
 }) => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background-DEFAULT dark:bg-background-DEFAULT-dark text-text-primary-DEFAULT dark:text-text-primary-dark transition-colors duration-300">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -23,11 +24,8 @@ const Layout: React.FC<LayoutProps> = ({
       </Head>
       
       <Header />
-      
-      <main className="flex-grow">
-        {children}
-      </main>
-      
+      <ThemeToggle />
+      <main className="flex-grow">{children}</main>
       <Footer />
     </div>
   );

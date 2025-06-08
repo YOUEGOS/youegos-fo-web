@@ -8,27 +8,54 @@ module.exports = {
   darkMode: 'class',
   theme: {
     extend: {
-      colors: {
-        // Palette noir et blanc
-        primary: {
-          DEFAULT: '#000000', // Noir
-          light: '#333333',
-          dark: '#000000'
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' }
         },
+        'slide-in-right': {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(0)' }
+        },
+        'glow': {
+          '0%, 100%': { opacity: '0.1' },
+          '50%': { opacity: '0.5' }
+        }
+      },
+      animation: {
+        'fade-in': 'fade-in 0.3s ease-out',
+        'slide-in-right': 'slide-in-right 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        'glow': 'glow 3s ease-in-out infinite'
+      },
+      colors: {
         accent: {
-          DEFAULT: '#4B5563', // Gris foncé
-          light: '#6B7280'   // Gris moyen
+          DEFAULT: '#C9A959', // Or premium
+          light: '#D4B872',   // Or clair
+          dark: '#B69344'     // Or foncé
         },
         text: {
-          primary: '#000000',   // Noir
-          secondary: '#4B5563', // Gris foncé
-          light: '#FFFFFF',     // Blanc
-          dark: '#E5E7EB'      // Gris clair
+          primary: {
+            DEFAULT: '#1A1A1A',
+            dark: '#FFFFFF'
+          },
+          secondary: {
+            DEFAULT: '#4A4A4A',
+            dark: '#E5E5E5'
+          }
         },
         background: {
-          light: '#FFFFFF', // Blanc pur
-          DEFAULT: '#F9FAFB', // Gris très clair
-          dark: '#111827'    // Noir profond
+          light: {
+            DEFAULT: '#FFFFFF',
+            dark: '#2C2C2C'
+          },
+          DEFAULT: {
+            DEFAULT: '#F5F5F5',
+            dark: '#1A1A1A'
+          },
+          dark: {
+            DEFAULT: '#EBEBEB',
+            dark: '#000000'
+          }
         },
         gray: {
           50: '#F9FAFB',
@@ -43,9 +70,9 @@ module.exports = {
           900: '#111827'
         },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        display: ['Inter', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace']
+        sans: ['Montserrat', 'sans-serif'],      // Police principale élégante et moderne
+        display: ['Playfair Display', 'serif'],  // Police de titres luxueuse
+        mono: ['JetBrains Mono', 'monospace']    // Gardée pour le code si nécessaire
       },
       boxShadow: {
         'xs': '0 0 0 1px rgba(0, 0, 0, 0.05)',
